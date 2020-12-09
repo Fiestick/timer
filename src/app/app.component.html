@@ -1,0 +1,12 @@
+<div class="container">
+  <div class="timer">{{hours}}:{{minutes}}:{{seconds}}</div>
+  
+  <div class="btn">
+    <button (click)="startTimer()" [hidden]="status === 'started'">Start</button>
+    <button [hidden]="status === 'stoped'" #stopBtn>Stop</button>
+    <button [disabled]="status === 'stoped'" #waitBtn>Wait</button>
+    <button [disabled]="status === 'stoped'" #resetBtn>Reset</button>
+  </div>
+</div>
+
+
