@@ -1,5 +1,5 @@
-import { Component, AfterViewInit, ViewChild } from "@angular/core";
-import { fromEvent, interval } from "rxjs";
+import { Component, AfterViewInit, ViewChild, OnDestroy } from "@angular/core";
+import { fromEvent, interval, Observable, Subscription } from "rxjs";
 import { buffer, debounceTime, filter, map, takeUntil } from "rxjs/operators";
 
 @Component({
@@ -7,7 +7,7 @@ import { buffer, debounceTime, filter, map, takeUntil } from "rxjs/operators";
   templateUrl: "./app.component.html",
   styleUrls: ["./app.component.scss"],
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnDestroy {
   //
   @ViewChild("stopBtn", { static: false }) stopBtn;
   @ViewChild("resetBtn", { static: false }) resetBtn;
@@ -15,11 +15,15 @@ export class AppComponent implements AfterViewInit {
 
   private timer$ = interval(1000);
   private timerValue: number = 0;
-  private stop$;
-  private wait$;
-  private reset$;
-  private doubleClicks$;
-  private buff$;
+  private stop$: Observable<any>;
+  private wait$: Observable<any>;
+  private reset$: Observable<any>;
+  private doubleClicks$: Observable<any>;
+  private buff$: Observable<any>;
+
+  private doubleClicksSubscription: Subscription;
+  private resetSubscription: Subscription;
+  private stopSubscription: Subscription;
 
   start: any;
   status: string = "stoped";
@@ -38,11 +42,11 @@ export class AppComponent implements AfterViewInit {
       map((click: any) => click.length),
       filter((click) => click === 2)
     );
-    this.doubleClicks$.subscribe(() => this.wait());
+    this.doubleClicksSubscription = this.doubleClicks$.subscribe(() => this.wait());
     // reset
-    this.reset$.subscribe(() => this.reset());
+    this.resetSubscription = this.reset$.subscribe(() => this.reset());
     // stop
-    this.stop$.subscribe(() => this.stop());
+    this.stopSubscription = this.stop$.subscribe(() => this.stop());
   }
 
   startTimer() {
@@ -98,5 +102,11 @@ export class AppComponent implements AfterViewInit {
     } else if (this.timerValue % 3600 == 0 && this.timerValue / 3600 >= 24) {
       this.minutes = "00";
     }
+  }
+
+  ngOnDestroy() {
+    this.doubleClicksSubscription.unsubscribe();
+    this.resetSubscription.unsubscribe();
+    this.stopSubscription.unsubscribe();
   }
 }
